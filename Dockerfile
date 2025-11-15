@@ -13,4 +13,4 @@ RUN pnpm install
 COPY . .
 RUN pnpm build
 
-CMD ["cp", "./dist", "/usr/src/app"]
+CMD ["cp", "./dist", "/usr/src/app/prod", "-r"]
