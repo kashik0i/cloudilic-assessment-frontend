@@ -24,6 +24,12 @@ export type Section = {
 
 export interface FlowNodeData extends Node {
     label: string
+    prompt?: string // For input nodes
+    uploadedFile?: string // For RAG nodes
+    documentId?: string // For RAG nodes
+    response?: string // For output nodes
+    isLoading?: boolean // For output nodes
+    error?: string // For output nodes
     [key: string]: unknown
 }
 

@@ -43,10 +43,10 @@ export function RagNode({ data }: NodeProps<FlowNodeData>) {
         setErrorMessage("");
 
         const formData = new FormData();
-        formData.append("pdf", file);
+        formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:4000/api/upload", {
+            const response = await fetch("http://localhost:4000/api/upload-pdf", {
                 method: "POST",
                 body: formData,
             });
