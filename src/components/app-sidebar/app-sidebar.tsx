@@ -53,14 +53,6 @@ const sections: Section[] = [
                     {type: "ragNode", label: "RAG", icon: FolderTree, data: {source: "rag"}},
                 ],
             },
-            {
-                title: "Emails",
-                seeAllHref: "#emails",
-                items: [
-                    {type: "gmail", label: "Gmail", icon: Mail, data: {source: "gmail"}},
-                    {type: "outlook", label: "Outlook", icon: Mail, data: {source: "outlook"}},
-                ],
-            },
         ],
     },
     {

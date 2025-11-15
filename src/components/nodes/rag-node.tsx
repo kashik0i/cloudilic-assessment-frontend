@@ -1,5 +1,5 @@
-import type { NodeProps } from "@xyflow/react";
-import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
+import { Handle, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useState, useRef, type ChangeEvent } from "react";
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
@@ -10,28 +10,31 @@ import {
     BaseNodeHeaderTitle,
 } from "./base-node";
 import { Button } from "@/components/ui/button";
-import type { FlowNodeData } from "@/interfaces.ts";
+import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
-export function RagNode({ data }: NodeProps<FlowNodeData>) {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+type AppNode = Node<FlowNodeData, FlowNodeType>;
+
+export function RagNode({ data }: NodeProps<AppNode>) {
     const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
     const [fileName, setFileName] = useState<string>((data as any)?.uploadedFile || "");
     const [errorMessage, setErrorMessage] = useState<string>("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const id = useNodeId();
+    const { setNodes } = useReactFlow();
 
     const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
         if (file.type !== "application/pdf") {
             setUploadStatus("error");
             setErrorMessage("Please select a PDF file");
             return;
         }
-
-        // Validate file size (e.g., max 10MB)
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
             setUploadStatus("error");
@@ -46,27 +49,34 @@ export function RagNode({ data }: NodeProps<FlowNodeData>) {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:4000/api/upload-pdf", {
+            const response = await fetch(`${API_URL}/api/upload-pdf`, {
                 method: "POST",
                 body: formData,
             });
-
-            if (!response.ok) {
-                throw new Error(`Upload failed: ${response.statusText}`);
-            }
-
+            if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
             const result = await response.json();
+            const documentId = result.documentId || result.id;
             setFileName(file.name);
             setUploadStatus("success");
-
-            // Update node data with uploaded file info
-            (data as any).uploadedFile = file.name;
-            (data as any).documentId = result.documentId || result.id;
+            if (id) {
+                setNodes((nodes) =>
+                    nodes.map((n) =>
+                        n.id === id
+                            ? {
+                                  ...n,
+                                  data: {
+                                      ...n.data,
+                                      uploadedFile: file.name,
+                                      documentId,
+                                  },
+                              }
+                            : n
+                    )
+                );
+            }
         } catch (error) {
             setUploadStatus("error");
-            setErrorMessage(
-                error instanceof Error ? error.message : "Upload failed"
-            );
+            setErrorMessage(error instanceof Error ? error.message : "Upload failed");
         }
     };
 
@@ -144,7 +154,6 @@ export function RagNode({ data }: NodeProps<FlowNodeData>) {
                 )}
             </BaseNodeContent>
 
-            {/* RAG node receives input from Input node and sends to Output node */}
             <Handle type="target" position={Position.Left} id="input" />
             <Handle type="source" position={Position.Right} id="output" />
         </BaseNode>

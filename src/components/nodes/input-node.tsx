@@ -1,4 +1,4 @@
-import type { NodeProps } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 
@@ -8,19 +8,20 @@ import {
     BaseNodeHeader,
     BaseNodeHeaderTitle,
 } from "./base-node";
-import type { FlowNodeData } from "@/interfaces.ts";
+import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
 
-export function InputNode({ data }: NodeProps<FlowNodeData>) {
+type AppNode = Node<FlowNodeData, FlowNodeType>;
+
+export function InputNode({ data }: NodeProps<AppNode>) {
     const id = useNodeId();
     const { setNodes } = useReactFlow();
 
-    const value = (typeof data?.label === "string" ? data.label : "");
+    const value = (typeof (data as any)?.label === "string" ? (data as any).label : "");
 
     const onChange = useCallback(
         (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             const next = e.target.value;
             if (!id) return;
-            // Update the node's data in React Flow so connected nodes can consume it.
             setNodes((nodes) =>
                 nodes.map((n) =>
                     n.id === id
@@ -29,7 +30,7 @@ export function InputNode({ data }: NodeProps<FlowNodeData>) {
                               data: {
                                   ...(n.data || {}),
                                   label: next,
-                                  prompt: next, // also expose as `prompt` for clarity
+                                  prompt: next,
                               },
                           }
                         : n
@@ -59,7 +60,6 @@ export function InputNode({ data }: NodeProps<FlowNodeData>) {
                     />
                 </div>
             </BaseNodeContent>
-            {/* Input node provides data to the flow, so expose a source handle on the right */}
             <Handle type="source" position={Position.Right} id="output" />
         </BaseNode>
     );

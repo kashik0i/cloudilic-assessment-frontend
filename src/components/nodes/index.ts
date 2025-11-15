@@ -7,6 +7,6 @@ export const nodeTypes = {
     inputNode: InputNode,
     ragNode: RagNode,
     outputNode: OutputNode,
-} satisfies NodeTypes;
+} as NodeTypes;
 
 export { InputNode, RagNode, OutputNode};

@@ -1,4 +1,4 @@
-import type { NodeProps } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
@@ -8,12 +8,14 @@ import {
     BaseNodeHeader,
     BaseNodeHeaderTitle,
 } from "./base-node";
-import type { FlowNodeData } from "@/interfaces.ts";
+import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
 
-export function OutputNode({ data }: NodeProps<FlowNodeData>) {
-    const isLoading = data?.isLoading || false;
-    const error = data?.error;
-    const response = data?.response;
+type AppNode = Node<FlowNodeData, FlowNodeType>;
+
+export function OutputNode({ data }: NodeProps<AppNode>) {
+    const isLoading = (data as any)?.isLoading || false;
+    const error = (data as any)?.error;
+    const response = (data as any)?.response;
 
     return (
         <BaseNode

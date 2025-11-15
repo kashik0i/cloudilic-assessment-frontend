@@ -1,6 +1,5 @@
 import type {ComponentType, SVGProps} from "react"
 import type {LucideIcon} from "lucide-react"
-import type {Node} from "@xyflow/react";
 import {nodeTypes} from "@/components/nodes";
 
 export interface BlockDef {
@@ -22,7 +21,9 @@ export type Section = {
     categories: Category[]
 }
 
-export interface FlowNodeData extends Node {
+// FlowNodeData now represents ONLY the custom data stored on a node's `data` property.
+// It no longer extends the React Flow `Node` type to avoid circular / overly broad typing.
+export interface FlowNodeData {
     label: string
     prompt?: string // For input nodes
     uploadedFile?: string // For RAG nodes
