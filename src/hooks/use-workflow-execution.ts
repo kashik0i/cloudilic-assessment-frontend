@@ -183,8 +183,32 @@ export function useWorkflowExecution(
     }
   }, [findPath, hasRag, nodes, setNodes, setOutputData, validate]);
 
+  const resetSession = useCallback(() => {
+    // Clear localStorage
+    localStorage.removeItem(SESSION_KEY);
+
+    // Clear output node's session data and chat history
+    setNodes(prev => prev.map(n => {
+      if (n.type === "outputNode") {
+        return {
+          ...n,
+          data: {
+            ...(n.data || {}),
+            sessionId: undefined,
+            chatHistory: [],
+            response: undefined,
+            error: undefined,
+            retrievedCount: undefined,
+          }
+        };
+      }
+      return n;
+    }));
+  }, [setNodes]);
+
   return {
     run,
+    resetSession,
     hasRag,
     pathIds,
     idsByType,

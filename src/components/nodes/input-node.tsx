@@ -1,6 +1,6 @@
 import type { Node, NodeProps } from "@xyflow/react";
-import { Handle, Position, useNodeId, useReactFlow } from "@xyflow/react";
-import { useCallback, useMemo } from "react";
+import { Handle, Position, useNodeId, useReactFlow, useStore } from "@xyflow/react";
+import { useCallback } from "react";
 
 import {
     BaseNode,
@@ -11,12 +11,13 @@ import {
 import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
+import * as React from "react";
 
 type AppNode = Node<FlowNodeData, FlowNodeType>;
 
 export function InputNode({ data }: NodeProps<AppNode>) {
     const id = useNodeId();
-    const { setNodes, getEdges } = useReactFlow();
+    const { setNodes } = useReactFlow();
 
     const value = (typeof (data as any)?.label === "string" ? (data as any).label : "");
 
@@ -42,15 +43,10 @@ export function InputNode({ data }: NodeProps<AppNode>) {
         [id, setNodes]
     );
 
-    const hasDownstream = useMemo(() => {
+    const hasDownstream = useStore((state) => {
         if (!id) return false;
-        try {
-            const edges = getEdges();
-            return edges.some(e => e.source === id);
-        } catch {
-            return false;
-        }
-    }, [getEdges, id]);
+        return state.edges.some(e => e.source === id);
+    });
 
     const canRun = (value?.trim()?.length ?? 0) > 0 && hasDownstream;
 

@@ -51,6 +51,7 @@ export function HealthIndicator({className}: {className?: string}) {
                         {status.error && (
                             <p className="text-[10px] text-red-400">{status.error}</p>
                         )}
+                        {/*TODO: fix this*/}
                         <p className="text-[10px] text-zinc-400">Click to retry</p>
                     </div>
                 </TooltipContent>

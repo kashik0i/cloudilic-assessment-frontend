@@ -1,6 +1,6 @@
 import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
-import { Loader2, AlertCircle, CheckCircle, MessageSquare } from "lucide-react";
+import {Loader2, AlertCircle, CheckCircle, MessageSquare, User, Bot} from "lucide-react";
 
 import {
     BaseNode,
@@ -67,14 +67,20 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                     </div>
                 )}
 
-                {/* Chat history (compact) */}
+                {/* Chat history (full execution history) */}
                 {!isLoading && chatHistory && chatHistory.length > 0 && (
-                    <div className="mb-2 rounded border bg-muted/50">
-                        <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground flex items-center gap-1">
-                            <MessageSquare className="h-3.5 w-3.5" /> History
+                    <div className="mb-3 rounded border bg-muted/30">
+                        <div className="px-3 py-2 text-xs font-semibold text-foreground flex items-center justify-between border-b bg-muted/50">
+                            <div className="flex items-center gap-1.5">
+                                <MessageSquare className="h-4 w-4" />
+                                <span>Execution History</span>
+                            </div>
+                            <span className="text-muted-foreground font-normal">
+                                {chatHistory.length} message{chatHistory.length !== 1 ? 's' : ''}
+                            </span>
                         </div>
                         <ScrollArea
-                            className="h-24 select-text nodrag nowheel cursor-text"
+                            className="h-64 select-text nodrag nowheel cursor-text"
                             onPointerDownCapture={(e) => {
                                 // prevent React Flow from starting a node drag while selecting text
                                 e.stopPropagation();
@@ -84,11 +90,35 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                             }}
                             data-no-drag={true}
                         >
-                            <div className="p-2 space-y-1 text-xs">
-                                {chatHistory.slice(-6).map((m, i) => (
-                                    <div key={i} className="flex gap-1">
-                                        <span className="text-muted-foreground shrink-0">{m.role === 'user' ? 'You:' : 'AI:'}</span>
-                                        <span className="break-words whitespace-pre-wrap">{m.content}</span>
+                            <div className="p-3 space-y-2">
+                                {chatHistory.map((m, i) => (
+                                    <div
+                                        key={i}
+                                        className={`flex gap-2 p-2 rounded-md ${
+                                            m.role === 'user' 
+                                                ? 'bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800' 
+                                                : 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800'
+                                        }`}
+                                    >
+                                        <div className="shrink-0 mt-0.5">
+                                            {m.role === 'user' ? (
+                                                <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                                            ) : (
+                                                <Bot className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className={`text-xs font-medium mb-1 ${
+                                                m.role === 'user' 
+                                                    ? 'text-blue-700 dark:text-blue-300' 
+                                                    : 'text-green-700 dark:text-green-300'
+                                            }`}>
+                                                {m.role === 'user' ? 'You' : 'Assistant'}
+                                            </div>
+                                            <div className="text-xs break-words whitespace-pre-wrap text-foreground/90">
+                                                {m.content}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

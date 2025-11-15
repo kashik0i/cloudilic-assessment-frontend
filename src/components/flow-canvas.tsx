@@ -16,19 +16,20 @@ import {useCallback, useState, useRef, useEffect} from "react";
 import {nodeTypes} from "@/components/nodes";
 import type {FlowNodeData, FlowNodeType} from "@/interfaces.ts";
 import {Button} from "@/components/ui/button";
-import {Play, Loader2} from "lucide-react";
+import {Play, Loader2, RotateCcw} from "lucide-react";
 import { useWorkflowExecution } from "@/hooks/use-workflow-execution.ts";
+import * as React from "react";
 
 // Initial starter nodes (optional). Can be removed if empty canvas desired.
 const initialNodes: Node<FlowNodeData, FlowNodeType>[] = [
-    {id: "n1", position: {x: 0, y: 0}, data: {label: "Question?"}, type: "inputNode"},
-    {id: "n2", position: {x: 260, y: 0}, data: {label: "RAG"}, type: "ragNode"},
-    {id: "n3", position: {x: 520, y: 0}, data: {label: "Output"}, type: "outputNode"},
+    // {id: "n1", position: {x: 0, y: 0}, data: {label: "Question?"}, type: "inputNode"},
+    // {id: "n2", position: {x: 260, y: 0}, data: {label: "RAG"}, type: "ragNode"},
+    // {id: "n3", position: {x: 520, y: 0}, data: {label: "Output"}, type: "outputNode"},
 ];
 
 const initialEdges: Edge[] = [
-    {id: "n1-n2", source: "n1", target: "n2", animated: false},
-    {id: "n2-n3", source: "n2", target: "n3", animated: true},
+    // {id: "n1-n2", source: "n1", target: "n2", animated: false},
+    // {id: "n2-n3", source: "n2", target: "n3", animated: true},
 ];
 
 // Small unique id helper.
@@ -136,7 +137,18 @@ function FlowCanvasInner() {
                 <Background />
                 <Controls />
             </ReactFlow>
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <Button
+                    onClick={exec.resetSession}
+                    disabled={isRunning}
+                    variant="outline"
+                    size="lg"
+                    className="shadow-lg"
+                    title="Reset session and clear chat history"
+                >
+                    <RotateCcw className="h-4 w-4" />
+                    <span className="ml-2">Reset Session</span>
+                </Button>
                 <Button onClick={exec.run} disabled={isRunning} size="lg" className="shadow-lg">
                     {isRunning ? (
                         <>
