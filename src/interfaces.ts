@@ -35,3 +35,12 @@ export interface FlowNodeData {
 }
 
 export type FlowNodeType = keyof typeof nodeTypes;
+
+// Added: Health status interface for backend health checker.
+export type HealthState = "up" | "down" | "degraded";
+export interface HealthStatus {
+    status: HealthState;
+    latencyMs?: number; // round-trip time
+    lastChecked: Date;
+    error?: string; // network / parsing errors
+}

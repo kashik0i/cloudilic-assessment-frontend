@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip"
 import {BlockCard} from "@/components/app-sidebar/block-card.tsx";
 import type {Section} from "@/interfaces.ts";
+import {HealthIndicator} from "@/components/health-indicator.tsx";
 
 
 const sections: Section[] = [
@@ -136,6 +137,7 @@ export function AppSidebar() {
                             <div className="flex items-center justify-center py-4">
                                 {/*<SidebarTrigger className="h-8 w-8"/>*/}
                             </div>
+                            <HealthIndicator className="" />
                         </SidebarGroupLabel>
                         <SidebarGroupContent className="px-3 pb-3">
                             <div className="relative">

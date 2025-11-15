@@ -71,3 +71,39 @@ export default defineConfig([
   },
 ])
 ```
+
+## Backend Health Indicator
+
+A backend health indicator has been added to the sidebar header (above the block search). It polls the endpoint `/api/health` every 20 seconds and displays:
+
+- A colored dot (green = up, yellow = degraded/slow, red = down/unreachable)
+- Text label (Healthy / Slow / Unreachable)
+- Latest latency in milliseconds
+
+Hovering over (or focusing) the indicator shows a tooltip with the last checked time and any error message. Clicking the indicator forces an immediate refresh.
+
+### Configuration
+
+Set `VITE_API_BASE` in your environment (e.g. `.env`) if the backend is hosted on a different origin:
+
+```
+VITE_API_BASE=https://your-backend.example.com
+```
+
+If `VITE_API_BASE` is not provided, the frontend will use a relative path (same origin) for `/api/health`.
+
+### Status Logic
+
+- `up`: HTTP 200 and latency <= 1500ms
+- `degraded`: HTTP 200 but latency > 1500ms
+- `down`: Non-OK response, network error, timeout (after 5s), or aborted fetch
+
+A timeout is enforced at 5000ms to prevent hanging requests.
+
+### Extending
+
+You can adjust polling interval in `use-health-status.ts` by passing a custom interval to `useHealthStatus(intervalMs)` or editing `DEFAULT_INTERVAL`.
+
+### Accessibility
+
+The indicator uses `aria-live="polite"` so screen readers will be notified of status changes without interruption.

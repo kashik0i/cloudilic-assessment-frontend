@@ -11,12 +11,18 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      // ensure content outside the viewport is clipped
+      className={cn("relative overflow-hidden", className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+        // allow scrolling and prevent wheel from bubbling to ReactFlow (zoom)
+        onWheelCapture={(e) => {
+          // stop wheel so canvas zoom doesn't trigger
+          e.stopPropagation();
+        }}
+        className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1 overflow-auto"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>

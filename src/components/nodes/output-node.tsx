@@ -9,6 +9,7 @@ import {
     BaseNodeHeaderTitle,
 } from "./base-node";
 import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type AppNode = Node<FlowNodeData, FlowNodeType>;
 
@@ -65,9 +66,11 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                             <CheckCircle className="h-4 w-4" />
                             <span className="text-xs font-medium">Response received</span>
                         </div>
-                        <div className="p-3 bg-muted rounded border text-sm whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
-                            {response}
-                        </div>
+                        <ScrollArea className="h-96 border rounded bg-muted">
+                            <div className="p-3 text-sm whitespace-pre-wrap break-words" aria-label="Flow response output" role="log">
+                                {response}
+                            </div>
+                        </ScrollArea>
                     </div>
                 )}
 

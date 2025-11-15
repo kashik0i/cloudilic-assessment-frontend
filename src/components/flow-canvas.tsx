@@ -44,6 +44,8 @@ function FlowCanvasInner() {
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [isRunning, setIsRunning] = useState(false);
     const { screenToFlowPosition } = useReactFlow();
+    // Track currently selected edge IDs so we can delete only edges (avoid accidental node deletion)
+    const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((els) => addEdge(params, els)),
@@ -217,8 +219,23 @@ function FlowCanvasInner() {
         }
     }, [nodes, setNodes]);
 
+    // Handle keyboard deletion of selected edges.
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (isRunning) return; // Do not allow edits while running.
+        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEdgeIds.length) {
+            setEdges(prev => prev.filter(ed => !selectedEdgeIds.includes(ed.id)));
+            setSelectedEdgeIds([]); // Clear selection after removal.
+        }
+    }, [isRunning, selectedEdgeIds, setEdges]);
+
     return (
-        <>
+        <div
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            aria-label="Flow canvas"
+            className="outline-none focus:ring-2 focus:ring-blue-500" // ring for focus visibility
+            style={{width: "100%", height: "100%", position: "relative"}}
+        >
             <ReactFlow
                 colorMode={theme === "system" ? "dark" : theme}
                 nodes={nodes}
@@ -230,6 +247,7 @@ function FlowCanvasInner() {
                 fitView
                 onDrop={onDrop}
                 onDragOver={onDragOver}
+                onSelectionChange={({ edges }) => setSelectedEdgeIds(edges.map(e => e.id))}
             >
                 <Background />
                 <Controls />
@@ -249,7 +267,7 @@ function FlowCanvasInner() {
                     )}
                 </Button>
             </div>
-        </>
+        </div>
     );
 }
 
