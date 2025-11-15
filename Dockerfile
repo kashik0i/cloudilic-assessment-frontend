@@ -13,4 +13,5 @@ RUN pnpm install
 COPY . .
 RUN pnpm build
 
-CMD ["cp", "./dist", "/usr/src/app/prod", "-r"]
+# Copy built assets into the shared volume path used by docker-compose
+CMD ["sh", "-c", "mkdir -p ./prod && cp -a ./dist/. ./prod/"]
