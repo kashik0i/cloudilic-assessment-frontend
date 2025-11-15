@@ -30,6 +30,10 @@ export function RagNode({data}: NodeProps<AppNode>) {
         const file = event.target.files?.[0];
         if (!file) return;
 
+        // Reset previous error state when new file is selected
+        setUploadStatus("idle");
+        setErrorMessage("");
+
         if (file.type !== "application/pdf") {
             setUploadStatus("error");
             setErrorMessage("Please select a PDF file");
