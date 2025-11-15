@@ -25,12 +25,20 @@ export type Section = {
 // It no longer extends the React Flow `Node` type to avoid circular / overly broad typing.
 export interface FlowNodeData {
     label: string
-    prompt?: string // For input nodes
-    uploadedFile?: string // For RAG nodes
-    documentId?: string // For RAG nodes
-    response?: string // For output nodes
-    isLoading?: boolean // For output nodes
-    error?: string // For output nodes
+    // Input node
+    prompt?: string
+    // RAG node
+    uploadedFile?: string
+    documentId?: string
+    documentChunkCount?: number
+    // Output node
+    response?: string
+    isLoading?: boolean
+    error?: string
+    retrievedCount?: number
+    // Session + chat history (global to flow, stored on output node for display)
+    sessionId?: string
+    chatHistory?: { role: "user" | "assistant"; content: string }[]
     [key: string]: unknown
 }
 
@@ -43,4 +51,21 @@ export interface HealthStatus {
     latencyMs?: number; // round-trip time
     lastChecked: Date;
     error?: string; // network / parsing errors
+}
+
+// API contracts used by services/api
+export type ChatPayload = {
+    prompt: string
+    documentId?: string
+    sessionId?: string
+}
+export type ChatResponse = {
+    answer: string
+    sessionId: string
+    retrievedCount?: number
+}
+
+export type UploadPdfResponse = {
+    documentId: string
+    chunkCount?: number
 }

@@ -1,7 +1,7 @@
-import type { Node, NodeProps } from "@xyflow/react";
-import { Handle, Position, useNodeId, useReactFlow } from "@xyflow/react";
-import { useState, useRef, type ChangeEvent } from "react";
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import type {Node, NodeProps} from "@xyflow/react";
+import {Handle, Position, useNodeId, useReactFlow} from "@xyflow/react";
+import {useState, useRef, type ChangeEvent} from "react";
+import {Upload, FileText, CheckCircle, AlertCircle, Loader2} from "lucide-react";
 
 import {
     BaseNode,
@@ -9,22 +9,22 @@ import {
     BaseNodeHeader,
     BaseNodeHeaderTitle,
 } from "./base-node";
-import { Button } from "@/components/ui/button";
-import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
+import {Button} from "@/components/ui/button";
+import type {FlowNodeData, FlowNodeType} from "@/interfaces.ts";
+import {uploadPdf} from "@/services/api.ts";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-
 type AppNode = Node<FlowNodeData, FlowNodeType>;
 
-export function RagNode({ data }: NodeProps<AppNode>) {
+export function RagNode({data}: NodeProps<AppNode>) {
     const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
     const [fileName, setFileName] = useState<string>((data as any)?.uploadedFile || "");
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [chunkCount, setChunkCount] = useState<number | undefined>((data as any)?.documentChunkCount);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const id = useNodeId();
-    const { setNodes } = useReactFlow();
+    const {setNodes} = useReactFlow();
 
     const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -45,31 +45,24 @@ export function RagNode({ data }: NodeProps<AppNode>) {
         setUploadStatus("uploading");
         setErrorMessage("");
 
-        const formData = new FormData();
-        formData.append("file", file);
-
         try {
-            const response = await fetch(`${API_URL}/api/upload-pdf`, {
-                method: "POST",
-                body: formData,
-            });
-            if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
-            const result = await response.json();
-            const documentId = result.documentId || result.id;
+            const result = await uploadPdf(file);
             setFileName(file.name);
             setUploadStatus("success");
+            setChunkCount(result.chunkCount);
             if (id) {
                 setNodes((nodes) =>
                     nodes.map((n) =>
                         n.id === id
                             ? {
-                                  ...n,
-                                  data: {
-                                      ...n.data,
-                                      uploadedFile: file.name,
-                                      documentId,
-                                  },
-                              }
+                                ...n,
+                                data: {
+                                    ...n.data,
+                                    uploadedFile: file.name,
+                                    documentId: result.documentId,
+                                    documentChunkCount: result.chunkCount,
+                                },
+                            }
                             : n
                     )
                 );
@@ -87,13 +80,13 @@ export function RagNode({ data }: NodeProps<AppNode>) {
     const getStatusIcon = () => {
         switch (uploadStatus) {
             case "uploading":
-                return <Loader2 className="h-4 w-4 animate-spin" />;
+                return <Loader2 className="h-4 w-4 animate-spin"/>;
             case "success":
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
+                return <CheckCircle className="h-4 w-4 text-green-500"/>;
             case "error":
-                return <AlertCircle className="h-4 w-4 text-red-500" />;
+                return <AlertCircle className="h-4 w-4 text-red-500"/>;
             default:
-                return <Upload className="h-4 w-4" />;
+                return <Upload className="h-4 w-4"/>;
         }
     };
 
@@ -131,22 +124,30 @@ export function RagNode({ data }: NodeProps<AppNode>) {
                         {uploadStatus === "uploading"
                             ? "Uploading..."
                             : fileName
-                            ? "Change PDF"
-                            : "Upload PDF"}
+                                ? "Change PDF"
+                                : "Upload PDF"}
                     </span>
                 </Button>
 
                 {fileName && uploadStatus === "success" && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-800">
-                        <FileText className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div
+                        className="flex items-center gap-2 mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-800">
+                        <FileText className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0"/>
                         <span className="text-xs text-green-700 dark:text-green-300 truncate">
                             {fileName}
                         </span>
                     </div>
                 )}
 
+                {typeof chunkCount === 'number' && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                        Indexed chunks: <span className="font-medium">{chunkCount}</span>
+                    </div>
+                )}
+
                 {errorMessage && uploadStatus === "error" && (
-                    <div className="mt-2 p-2 bg-red-50 dark:bg-red-950/20 rounded border border-red-200 dark:border-red-800">
+                    <div
+                        className="mt-2 p-2 bg-red-50 dark:bg-red-950/20 rounded border border-red-200 dark:border-red-800">
                         <p className="text-xs text-red-700 dark:text-red-300">
                             {errorMessage}
                         </p>
@@ -154,8 +155,8 @@ export function RagNode({ data }: NodeProps<AppNode>) {
                 )}
             </BaseNodeContent>
 
-            <Handle type="target" position={Position.Left} id="input" />
-            <Handle type="source" position={Position.Right} id="output" />
+            <Handle type="target" position={Position.Left} id="input"/>
+            <Handle type="source" position={Position.Right} id="output"/>
         </BaseNode>
     );
 }

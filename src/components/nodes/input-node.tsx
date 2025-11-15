@@ -1,6 +1,6 @@
 import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position, useNodeId, useReactFlow } from "@xyflow/react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import {
     BaseNode,
@@ -9,12 +9,14 @@ import {
     BaseNodeHeaderTitle,
 } from "./base-node";
 import type { FlowNodeData, FlowNodeType } from "@/interfaces.ts";
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
 
 type AppNode = Node<FlowNodeData, FlowNodeType>;
 
 export function InputNode({ data }: NodeProps<AppNode>) {
     const id = useNodeId();
-    const { setNodes } = useReactFlow();
+    const { setNodes, getEdges } = useReactFlow();
 
     const value = (typeof (data as any)?.label === "string" ? (data as any).label : "");
 
@@ -40,6 +42,22 @@ export function InputNode({ data }: NodeProps<AppNode>) {
         [id, setNodes]
     );
 
+    const hasDownstream = useMemo(() => {
+        if (!id) return false;
+        try {
+            const edges = getEdges();
+            return edges.some(e => e.source === id);
+        } catch {
+            return false;
+        }
+    }, [getEdges, id]);
+
+    const canRun = (value?.trim()?.length ?? 0) > 0 && hasDownstream;
+
+    const triggerRun = useCallback(() => {
+        window.dispatchEvent(new CustomEvent("workflow/run"));
+    }, []);
+
     return (
         <BaseNode aria-label="Input node" aria-describedby="input-node-desc">
             <BaseNodeHeader>
@@ -58,6 +76,12 @@ export function InputNode({ data }: NodeProps<AppNode>) {
                         className="w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         aria-label="Prompt input"
                     />
+                </div>
+                <div className="mt-2 flex justify-end">
+                    <Button size="sm" onClick={triggerRun} disabled={!canRun}>
+                        <Play className="h-3.5 w-3.5" />
+                        <span className="ml-1 text-xs">Run</span>
+                    </Button>
                 </div>
             </BaseNodeContent>
             <Handle type="source" position={Position.Right} id="output" />

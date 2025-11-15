@@ -1,6 +1,6 @@
 import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, MessageSquare } from "lucide-react";
 
 import {
     BaseNode,
@@ -17,6 +17,8 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
     const isLoading = (data as any)?.isLoading || false;
     const error = (data as any)?.error;
     const response = (data as any)?.response;
+    const retrievedCount = (data as any)?.retrievedCount as number | undefined;
+    const chatHistory = (data as any)?.chatHistory as { role: "user" | "assistant"; content: string }[] | undefined;
 
     return (
         <BaseNode
@@ -33,6 +35,12 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                 >
                     Displays the final result of the flow.
                 </div>
+
+                {typeof retrievedCount === 'number' && (
+                    <div className="mb-2 text-xs text-muted-foreground">
+                        Retrieved <span className="font-medium">{retrievedCount}</span> chunks
+                    </div>
+                )}
 
                 {/* Loading State */}
                 {isLoading && (
@@ -59,6 +67,35 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                     </div>
                 )}
 
+                {/* Chat history (compact) */}
+                {!isLoading && chatHistory && chatHistory.length > 0 && (
+                    <div className="mb-2 rounded border bg-muted/50">
+                        <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground flex items-center gap-1">
+                            <MessageSquare className="h-3.5 w-3.5" /> History
+                        </div>
+                        <ScrollArea
+                            className="h-24 select-text nodrag nowheel cursor-text"
+                            onPointerDownCapture={(e) => {
+                                // prevent React Flow from starting a node drag while selecting text
+                                e.stopPropagation();
+                            }}
+                            onMouseDownCapture={(e) => {
+                                e.stopPropagation();
+                            }}
+                            data-no-drag={true}
+                        >
+                            <div className="p-2 space-y-1 text-xs">
+                                {chatHistory.slice(-6).map((m, i) => (
+                                    <div key={i} className="flex gap-1">
+                                        <span className="text-muted-foreground shrink-0">{m.role === 'user' ? 'You:' : 'AI:'}</span>
+                                        <span className="break-words whitespace-pre-wrap">{m.content}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </div>
+                )}
+
                 {/* Success State with Response */}
                 {!isLoading && !error && response && (
                     <div className="space-y-2">
@@ -66,7 +103,17 @@ export function OutputNode({ data }: NodeProps<AppNode>) {
                             <CheckCircle className="h-4 w-4" />
                             <span className="text-xs font-medium">Response received</span>
                         </div>
-                        <ScrollArea className="h-96 border rounded bg-muted">
+                        <ScrollArea
+                            className="h-96 border rounded bg-muted select-text nodrag nowheel cursor-text"
+                            onPointerDownCapture={(e) => {
+                                // prevent React Flow from starting a node drag while selecting/copying
+                                e.stopPropagation();
+                            }}
+                            onMouseDownCapture={(e) => {
+                                e.stopPropagation();
+                            }}
+                            data-no-drag={true}
+                        >
                             <div className="p-3 text-sm whitespace-pre-wrap break-words" aria-label="Flow response output" role="log">
                                 {response}
                             </div>
