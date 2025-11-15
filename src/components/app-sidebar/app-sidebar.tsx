@@ -7,6 +7,8 @@ import {
     Blocks,
     Mail,
     FolderTree,
+    FileInput,
+    FileOutput,
 } from "lucide-react"
 
 import {
@@ -26,7 +28,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import {BlockCard} from "@/components/app-sidebar/BlockCard.tsx";
+import {BlockCard} from "@/components/app-sidebar/block-card.tsx";
 import type {Section} from "@/interfaces.ts";
 
 
@@ -37,18 +39,26 @@ const sections: Section[] = [
         icon: DownloadCloud,
         categories: [
             {
-                title: "Emails",
-                seeAllHref: "#emails",
+                title: "I/O Nodes",
+                seeAllHref: "#io",
                 items: [
-                    {type: "gmail", label: "Gmail", icon: Mail, data: {source: "gmail"}},
-                    {type: "outlook", label: "Outlook", icon: Mail, data: {source: "outlook"}},
+                    {type: "inputNode", label: "Input", icon: FileInput, data: {label: "Input"}},
+                    {type: "outputNode", label: "Output", icon: FileOutput, data: {label: "Output"}},
                 ],
             },
             {
                 title: "Knowledge Bases",
                 seeAllHref: "#kbs",
                 items: [
-                    {type: "rag", label: "Rag/Multi Rag", icon: FolderTree, data: {source: "rag"}},
+                    {type: "ragNode", label: "RAG", icon: FolderTree, data: {source: "rag"}},
+                ],
+            },
+            {
+                title: "Emails",
+                seeAllHref: "#emails",
+                items: [
+                    {type: "gmail", label: "Gmail", icon: Mail, data: {source: "gmail"}},
+                    {type: "outlook", label: "Outlook", icon: Mail, data: {source: "outlook"}},
                 ],
             },
         ],

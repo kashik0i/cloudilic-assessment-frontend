@@ -1,9 +1,12 @@
-import {TextUpdaterNode} from './TextUpdaterNode';
-import CustomNode from "./CustomNode.tsx";
+import {InputNode} from "./input-node.tsx";
+import {RagNode} from "./rag-node.tsx";
+import {OutputNode} from "./output-node.tsx";
+import type {NodeTypes} from "@xyflow/react";
 
-const nodeTypes = {
-    textUpdater: TextUpdaterNode,
-    customNode: CustomNode,
-};
+export const nodeTypes = {
+    inputNode: InputNode,
+    ragNode: RagNode,
+    outputNode: OutputNode,
+} satisfies NodeTypes;
 
-export {nodeTypes, TextUpdaterNode};
+export { InputNode, RagNode, OutputNode};

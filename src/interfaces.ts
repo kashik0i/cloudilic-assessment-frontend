@@ -1,5 +1,7 @@
 import type {ComponentType, SVGProps} from "react"
 import type {LucideIcon} from "lucide-react"
+import type {Node} from "@xyflow/react";
+import {nodeTypes} from "@/components/nodes";
 
 export interface BlockDef {
     type: string
@@ -20,3 +22,9 @@ export type Section = {
     categories: Category[]
 }
 
+export interface FlowNodeData extends Node {
+    label: string
+    [key: string]: unknown
+}
+
+export type FlowNodeType = keyof typeof nodeTypes;
