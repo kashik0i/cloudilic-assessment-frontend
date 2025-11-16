@@ -1,25 +1,6 @@
-import {useEffect, useRef, useState, useCallback} from "react";
-import type {HealthStatus, HealthState} from "@/interfaces.ts";
-
-const DEFAULT_INTERVAL = 20_000; // 20s polling
-const TIMEOUT_MS = 5_000; // abort if backend doesn't respond quickly
-const DEGRADED_LATENCY_MS = 1500; // threshold for degraded state
-
-function getBaseUrl() {
-    // Allow configuration via env, fallback to relative path.
-    return import.meta.env.VITE_API_URL || "";
-}
-
-async function fetchWithTimeout(input: RequestInfo, init?: RequestInit): Promise<Response> {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-        const res = await fetch(input, {...init, signal: controller.signal});
-        return res;
-    } finally {
-        clearTimeout(id);
-    }
-}
+import {useCallback, useEffect, useRef, useState} from "react";
+import {DEFAULT_INTERVAL, DEGRADED_LATENCY_MS, type HealthState, type HealthStatus} from "@/interfaces.ts";
+import {fetchWithTimeout, getBaseUrl} from "@/services/api.ts";
 
 export function useHealthStatus(interval: number = DEFAULT_INTERVAL) {
     const [status, setStatus] = useState<HealthStatus>({status: "down", lastChecked: new Date(), error: "Not yet checked"});
@@ -29,7 +10,7 @@ export function useHealthStatus(interval: number = DEFAULT_INTERVAL) {
         const start = performance.now();
         let next: HealthStatus;
         try {
-            const res = await fetchWithTimeout(`${getBaseUrl()}/api/health`, {headers: {"Accept": "application/json"}});
+            const res = await fetchWithTimeout(`${getBaseUrl()}/health`, {headers: {"Accept": "application/json"}});
             const end = performance.now();
             const latencyMs = Math.round(end - start);
             if (!res.ok) {

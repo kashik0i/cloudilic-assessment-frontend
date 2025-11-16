@@ -1,11 +1,23 @@
-import type { ChatPayload, ChatResponse, UploadPdfResponse } from "@/interfaces";
+import {type ChatPayload, type ChatResponse, TIMEOUT_MS, type UploadPdfResponse} from "@/interfaces";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+export function getBaseUrl() {
+  return import.meta.env.VITE_API_URL || "";
+}
+
+export async function fetchWithTimeout(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    return await fetch(input, {...init, signal: controller.signal});
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 export async function uploadPdf(file: File): Promise<UploadPdfResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${API_URL}/api/upload-pdf`, { method: "POST", body: formData });
+  const res = await fetch(`${getBaseUrl()}/upload-pdf`, { method: "POST", body: formData });
   if (!res.ok) throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
   const json = await res.json();
   return {
@@ -16,19 +28,11 @@ export async function uploadPdf(file: File): Promise<UploadPdfResponse> {
 
 export async function chat(payload: ChatPayload): Promise<ChatResponse> {
   // Primary endpoint
-  let res = await fetch(`${API_URL}/api/chat`, {
+  let res = await fetch(`${getBaseUrl()}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  // Fallback to legacy /api/query if 404/405
-  if (!res.ok && (res.status === 404 || res.status === 405)) {
-    res = await fetch(`${API_URL}/api/query`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: payload.prompt, documentId: payload.documentId, sessionId: payload.sessionId }),
-    });
-  }
   if (!res.ok) throw new Error(`Chat failed: ${res.status} ${res.statusText}`);
   const json = await res.json();
   return {

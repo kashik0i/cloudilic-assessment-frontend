@@ -69,3 +69,7 @@ export type UploadPdfResponse = {
     documentId: string
     chunkCount?: number
 }
+
+export const DEFAULT_INTERVAL = 20_000; // 20s polling
+export const TIMEOUT_MS = 5_000; // abort if backend doesn't respond quickly
+export const DEGRADED_LATENCY_MS = 1500; // threshold for degraded state
